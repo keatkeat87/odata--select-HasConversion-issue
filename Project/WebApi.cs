@@ -12,10 +12,30 @@ namespace Project
 {
     public class PeopleController : ODataController
     {
-        [EnableQuery]
-        public ActionResult<Person> Get([FromServices] ApplicationDbContext db)
+        #region DI
+        public PeopleController(
+            ApplicationDbContext applicationDbContext
+        )
         {
-            return Ok(db.People);
+            Db = applicationDbContext;
+        }
+        #endregion
+
+        private readonly ApplicationDbContext Db;
+
+        [EnableQuery]
+        public IActionResult Get()
+        {
+            Db.People.Add(new Person
+            {
+                firstName = "a",
+                lastName = "b",
+                car = new Car { name = "dada" },
+                //cars = new G<Car> { values = new List<Car> { new Car { name = "sdad" } } }
+                cars = new List<Car> { new Car { name = "sdad" } }
+            });
+            Db.SaveChanges();
+            return Ok(Db.People);
         }
     }
 }

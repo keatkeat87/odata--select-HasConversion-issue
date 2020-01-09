@@ -18,10 +18,9 @@ namespace Project.Pages
             _logger = logger;
         }
 
-        public void OnGet([FromServices] ApplicationDbContext db)
+        public void OnGet()
         {
-            db.People.Add(new Person { firstName = "a", lastName = "b", car = new Car { name = "dada" } });
-            db.SaveChanges();
+        
         }
     }
 }

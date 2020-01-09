@@ -28,7 +28,7 @@ namespace Project
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                  options.UseSqlServer("Server=192.168.1.152;Database=odata;User Id=keatkeat;Password=001001;"));
+                  options.UseSqlServer("Server=192.168.1.153;Database=odata;User Id=keatkeat;Password=001001;"));
 
             services.AddControllers(mvcOptions =>
                mvcOptions.EnableEndpointRouting = false);
