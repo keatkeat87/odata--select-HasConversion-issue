@@ -1,51 +1,60 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Project.Entity
 {
-    public class Car
-    {
-        public string name { get; set; }
-    }
-    //public class G<T>
-    //{
-    //    public List<T> values { get; set; }
-    //}
-
-    public class Person
+    public class Product
     {
         public int Id { get; set; }
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public Car car { get; set; }
-        public List<Car> cars { get; set; }
-        //public G<Car> cars { get; set; }
+        public string name { get; set; }
+        public Image image { get; set; }
+        public List<Image> images { get; set; } = new List<Image>();
     }
-    public class ApplicationDbContext : DbContext
+
+    public class Image
     {
-        public ApplicationDbContext(
-           DbContextOptions<ApplicationDbContext> options
-       ) : base(options)
+        public string src { get; set; }
+        public int size { get; set; }
+    }
+
+    public class CustomerOrderContext : DbContext
+    {
+        private readonly ILoggerFactory LoggerFactory;
+
+        public CustomerOrderContext(
+            DbContextOptions<CustomerOrderContext> options,
+            ILoggerFactory loggerFactory
+        )
+            : base(options)
         {
+            LoggerFactory = loggerFactory;
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.UseLoggerFactory(LoggerFactory);
+        }
+
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Person>().Property(p => p.car).HasConversion(p => JsonConvert.SerializeObject(p), s => JsonConvert.DeserializeObject<Car>(s));
+            // Work!!
+            //modelBuilder.Entity<Product>().OwnsOne(c => c.image);
+            //modelBuilder.Entity<Product>().OwnsMany(c => c.images);
 
-            modelBuilder.Entity<Person>().Property(p => p.cars).HasConversion(p => JsonConvert.SerializeObject(p), s => JsonConvert.DeserializeObject<List<Car>>(s));
-
-            //modelBuilder.Entity<Person>().Property(p => p.cars).HasConversion(p => JsonConvert.SerializeObject(p), s =>JsonConvert.DeserializeObject<G<Car>>(s));
-
-            modelBuilder.Entity<Person>().Property(p => p.car).HasMaxLength(128);
-            modelBuilder.Entity<Person>().Property(p => p.car).IsRequired(false);
+            // Not work!!
+            modelBuilder.Entity<Product>().Property(c => c.image).HasConversion(c => JsonConvert.SerializeObject(c), s => JsonConvert.DeserializeObject<Image>(s));
+            modelBuilder.Entity<Product>().Property(c => c.images).HasConversion(c => JsonConvert.SerializeObject(c), s => JsonConvert.DeserializeObject<List<Image>>(s));
         }
-        public DbSet<Person> People { get; set; }
     }
-
-
 }

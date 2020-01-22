@@ -6,36 +6,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Project.Entity;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace Project
 {
-    public class PeopleController : ODataController
+    public class ProductsController : ODataController
     {
-        #region DI
-        public PeopleController(
-            ApplicationDbContext applicationDbContext
-        )
-        {
-            Db = applicationDbContext;
-        }
-        #endregion
+        private readonly CustomerOrderContext _context;
 
-        private readonly ApplicationDbContext Db;
+        public ProductsController(CustomerOrderContext context)
+        {
+            _context = context;
+        }
 
         [EnableQuery]
         public IActionResult Get()
         {
-            Db.People.Add(new Person
-            {
-                firstName = "a",
-                lastName = "b",
-                car = new Car { name = "dada" },
-                //cars = new G<Car> { values = new List<Car> { new Car { name = "sdad" } } }
-                cars = new List<Car> { new Car { name = "sdad" } }
-            });
-            Db.SaveChanges();
-            return Ok(Db.People);
+            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            var products = _context.Products.Select(p => new { p.images }).ToList(); // work
+            return Ok(_context.Products);
         }
     }
 }

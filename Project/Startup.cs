@@ -24,21 +24,18 @@ namespace Project
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                  options.UseSqlServer("Server=192.168.1.153;Database=odata;User Id=keatkeat;Password=001001;"));
+            services.AddDbContext<CustomerOrderContext>(options =>
+                  options.UseSqlServer("Server=192.168.1.152;Database=odata;User Id=keatkeat;Password=001001;"));
 
             services.AddControllers(mvcOptions =>
                mvcOptions.EnableEndpointRouting = false);
 
             services.AddOData();
-
             services.AddRazorPages();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -58,27 +55,27 @@ namespace Project
 
             app.UseMvc(routeBuilder =>
             {
-                routeBuilder.Select().Filter().Expand().OrderBy().Count();
-                routeBuilder.EnableDependencyInjection();
-                routeBuilder.MapODataServiceRoute("odata", "api", GetEdmModel());
+                routeBuilder.Select().Expand().Filter().OrderBy().MaxTop(100).Count();
+                IEdmModel model = EdmModelBuilder.GetEdmModel();
+                routeBuilder.MapODataServiceRoute("odata", "odata", model);
             });
-
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapControllers();
-            //});
         }
 
-        IEdmModel GetEdmModel()
+        public static class EdmModelBuilder
         {
-            var odataBuilder = new ODataConventionModelBuilder();
-            odataBuilder.EntitySet<Person>("People");
-            odataBuilder.EntitySet<Person>("People");
-            odataBuilder.ComplexType<Car>();
+            private static IEdmModel _edmModel;
 
-            return odataBuilder.GetEdmModel();
+            public static IEdmModel GetEdmModel()
+            {
+                if (_edmModel == null)
+                {
+                    var builder = new ODataConventionModelBuilder();
+                    builder.EntitySet<Product>("Products");
+                    _edmModel = builder.GetEdmModel();
+                }
+
+                return _edmModel;
+            }
         }
     }
-
-
 }
